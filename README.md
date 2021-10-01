@@ -17,9 +17,9 @@
 | File | Description |
 | ---- | ----------- |
 | genes.txt | List of genes on gene co-expression network for Zea mays |
-| gcn.csv | Gene co-expression network (edgelist) for Zea mays [1] |
-| affg.csv | Affinity graph (edgelist) for Zea mays [1] |
+| gcn.csv | Gene co-expression network (edgelist) for Zea mays (available in [link]) |
+| affg.csv | Affinity graph (edgelist) for Zea mays (available in [link]) |
 | gfunc | Associations between genes and functions of level 1 in GO hierarchy |
 | go-basic.obo | Gene Ontology hierarchy database |
 
-[1]: https://drive.google.com/drive/folders/1aIahl4a75BgicCcybpZAT2UPzdyZJE3T?usp=sharing
+[link]: https://drive.google.com/drive/folders/1aIahl4a75BgicCcybpZAT2UPzdyZJE3T?usp=sharing
