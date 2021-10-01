@@ -1,6 +1,13 @@
 # Clustering-based Function Prediction
 ## by Miguel Romero and Oscar Ramirez
 
+This repository contains the source code and data used for the paper:
+
+    Supervised Gene Function Prediction using Spectral Clustering on Gene Co-expression Networks
+    Miguel Romero, Óscar Ramírez, Jorge Finke, and Camilo Rocha
+    Accepted in Complex Networks 2021
+
+
  1. Source code
 
 | File | Description |
