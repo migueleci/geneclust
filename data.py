@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # Gene function prediction - Data preprocessing
-# Miguel Romero - Oscar Ramirez, jul 2nd
+# Miguel Romero - Oscar Ramirez, sep 30 2021
 
 import os
 import sys
@@ -35,10 +35,9 @@ warnings.filterwarnings(action='ignore',category=FutureWarning)
 # 1. Load data and create matrices
 ##################################
 
-path = '/users/grupofinke/ramirez/xgb' #'/home/miguel/projects/omics/maize_data/xgb'
-data_gcn = pd.read_csv('{0}/edgelist.csv'.format(path))
-data_term_def = pd.read_csv('{0}/countFunctions.csv'.format(path))
-data_functions = pd.read_csv('{0}/l1func.csv'.format(path))
+data_gcn = pd.read_csv('gcn.csv'.format(path)) # or affg.csv
+data_term_def = pd.read_csv('cfunc.csv'.format(path))
+data_functions = pd.read_csv('gfunc.csv'.format(path))
 
 data_gcn = data_gcn[['source', 'target']]
 data_term_def = data_term_def[['Function', 'Description']]
@@ -129,38 +128,6 @@ genes_pred_idx = np.arange(nG)
 sm_gcn = gcn
 sm_gene_by_go = gene_by_go
 
-# create graph for gcn (hierarchy gcn)
-sm_gcn_nx = nx.Graph()
-sm_gcn_edgelist = np.transpose(np.nonzero(sm_gcn)).tolist()
-sm_gcn_nx.add_nodes_from(np.arange(len(genes_pred_idx)))
-sm_gcn_nx.add_edges_from(sm_gcn_edgelist)
-print(nx.info(sm_gcn_nx))
-
-
-
-# node embedding for prediction
-dimensions = 16
-p, q = 1, 0.5
-
-node2vec = Node2Vec(sm_gcn_nx, dimensions=dimensions, walk_length=5, num_walks=300, workers=64, p=p, q=q)
-model = node2vec.fit(window=5, min_count=1, batch_words=5, workers=64)
-embeddings = np.array([model.wv.get_vector(str(x)) for x in list(sm_gcn_nx.nodes)])
-
-# dimensionality reduction for clustering
-tsne = TSNE(n_components=2, random_state=7, perplexity=15)
-embeddings_2d = tsne.fit_transform(embeddings)
-
-clustering_model = AffinityPropagation(damping=0.9)
-clustering_model.fit(embeddings_2d)
-yhat = clustering_model.predict(embeddings_2d)
-
-# dimensionality reduction for small representation
-n_components = 1
-tsne = TSNE(n_components=n_components, random_state=7, perplexity=15)
-embeddings_1d = tsne.fit_transform(embeddings)
-
-
-
 # igraph
 sm_gcn_nx = ig.Graph.Adjacency((sm_gcn > 0).tolist())
 sm_gcn_nx.to_undirected()
@@ -181,9 +148,8 @@ coren = np.array(sm_gcn_nx.coreness())
 diver = np.array(sm_gcn_nx.diversity())
 
 # add node properties to new df
-
 # cretae dataset
-genes = P[genes_pred_idx]
+genes = G[genes_pred_idx]
 sm_df = pd.DataFrame()
 
 sm_df['clust'] = pd.Series(clust) # clustering
@@ -198,12 +164,6 @@ sm_df['hubs'] = pd.Series(hubs) # hub score
 sm_df['auths'] = pd.Series(auths) # authority score
 sm_df['coren'] = pd.Series(coren) # coreness
 sm_df['diver'] = pd.Series(diver) # diversity
-
-for i in range(dimensions):
-  sm_df['emb_{0}'.format(i)] = pd.Series(embeddings[:,i])
-for i in range(n_components):
-  sm_df['emb_red_{0}'.format(i)] = pd.Series(embeddings_1d[:,i])
-sm_df['emb_clust'] = pd.Series(yhat)
 
 columns = list(sm_df.columns)
 sm_df = scale_data(sm_df)

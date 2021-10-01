@@ -1,4 +1,8 @@
-# %%
+#!/usr/bin/env python3
+# coding: utf-8
+
+# Gene function prediction - Gene Ontology Term Enrichment and feature creation
+# Miguel Romero - Oscar Ramirez, sep 30 2021
 
 import os
 import json
@@ -19,18 +23,13 @@ import statsmodels.stats.multitest as smt  # for pvalue adjustment
 
 pd.set_option("display.precision", 2)
 
-# %%
-
-df = pd.read_csv('functions_gene.csv', names=["id",'functions'])
 godag = GODag("go-basic.obo")
 
-ndf = pd.read_csv("l1func.csv")
+ndf = pd.read_csv("gfunc.csv")
 def array2list(str):
   str = str.replace("\'",'\"')
   return json.loads(str)
 ndf['funcs'] = ndf.funcs.apply(lambda t: array2list(t))
-
-# %%
 
 ufunc = list()
 for x in ndf['funcs'].tolist(): ufunc += x
@@ -47,7 +46,6 @@ df_funcs['Description'] = [godag[x].name for x in df_funcs['Function']]
 df_funcs['Genes'] = gene4func.values()
 df_funcs = df_funcs.sort_values(['Genes'], ascending=False).reset_index(drop=True)
 
-# %%
 
 def GO_enrichment():
   '''
@@ -110,25 +108,11 @@ def enriched_modules():
   return goedf2
   # return goedf2.module.nunique()
 
-# %%
 
 '''
 Create files to compare with xgb results
 
 '''
-def create_files(labels, df, folder):
-  total = 0
-  for func in df.GO_id.unique():
-    arr = np.zeros(len(labels))
-    mods = df[df.GO_id==func].module.tolist()
-    idx = labels[labels.label.isin(mods)].index
-    arr[idx] = 1
-    res = pd.DataFrame()
-    res['label'] = arr
-    res.to_csv('{0}/{1}.csv'.format(folder, func.replace(':','')), index=False)
-    print('{0} --> {1}'.format(func, np.sum(arr)))
-    total += np.sum(arr)
-  return total
 
 # create file of pvalues
 def create_files_pvalues(labels, df, folder):
@@ -152,22 +136,26 @@ def create_path(path):
   except:
     pass
 
-# %%
-
 path = 'spectral'
 
-n_clusters = [10,15,20,25,30,40,50,60,70,80,90,100]
 n_clusters = [10,20,30,40,50,60,70,80,90,100]
-files = ['n{0}.csv'.format(x) for x in n_clusters]
 
+files = ['n{0}.csv'.format(x) for x in n_clusters]
 for nc, file in zip(n_clusters, files):
   ldf = pd.read_csv('{0}/{1}'.format(path,file), names=["label"])
   n = len(ldf['label'].unique())
   goedf2 = enriched_modules()
-  print('\n#### n{0}\n'.format(nc))
-  # print(goedf2.module.value_counts(sort=True))
-  # print(ldf.label.value_counts(sort=True))
 
   outpath = '{0}/n{1}'.format(path, nc)
+  create_path(outpath)
+  total = create_files_pvalues(ldf, goedf2, outpath)
+
+files = ['{0}.csv'.format(x) for x in n_clusters]
+for nc, file in zip(n_clusters, files):
+  ldf = pd.read_csv('{0}/{1}'.format(path,file), names=["label"])
+  n = len(ldf['label'].unique())
+  goedf2 = enriched_modules()
+
+  outpath = '{0}/{1}'.format(path, nc)
   create_path(outpath)
   total = create_files_pvalues(ldf, goedf2, outpath)

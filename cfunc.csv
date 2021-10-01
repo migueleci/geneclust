@@ -1,0 +1,20 @@
+Term,Description,Genes
+GO:0009987,cellular process,4269
+GO:0008152,metabolic process,3047
+GO:0065007,biological regulation,1492
+GO:0051179,localization,872
+GO:0050896,response to stimulus,851
+GO:0023052,signaling,307
+GO:0032502,developmental process,124
+GO:0000003,reproduction,78
+GO:0022414,reproductive process,76
+GO:0032501,multicellular organismal process,76
+GO:0044419,biological process involved in interspecies interaction between organisms,48
+GO:0002376,immune system process,47
+GO:0098754,detoxification,11
+GO:0048511,rhythmic process,10
+GO:0040007,growth,5
+GO:0019740,nitrogen utilization,4
+GO:0040011,locomotion,2
+GO:0016032,viral process,1
+GO:0051704,multi-organism process,1

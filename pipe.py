@@ -1,8 +1,8 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # coding: utf-8
 
-# Gene function prediction
-# Miguel Romero, nov 3rd
+# Gene function prediction - Supervised learning for gene function prediction
+# Miguel Romero - Oscar Ramirez, sep 30 2021
 
 import os
 import sys
@@ -172,8 +172,7 @@ def write_csv():
 start_time = time()
 dt = datetime.datetime.today()
 
-PATH = "/users/grupofinke/ramirez/xgb"
-# PATH = "/home/miguel/projects/omics/maize_data/xgb"
+PATH = "..." # working path
 
 seed = 92021  # seed for random state
 n_splits = 5 # number of folds
@@ -211,18 +210,18 @@ TNr = list()
 
 Genes = list() # execution time
 
-OUTPUT_PATH = "{0}/feat_sel_wtop/{1}-{2}-{3}".format(PATH, dt.year, dt.month, dt.day)
+OUTPUT_PATH = "{0}/featsel/{1}-{2}-{3}".format(PATH, dt.year, dt.month, dt.day)
 create_path(OUTPUT_PATH)
 
 nclusters = [str(x) for x in range(10,101,10)] + ['n{0}'.format(x) for x in range(10,101,10)]
 
 c = 0
-file = open('feat_sel_wtop/top_feat.txt','r')
+file = open('featsel/top_feat.txt','r')
 for l in file.readlines():
   c = max(c,len(l.split(',')))
 nc_cols = ['c{0}'.format(x) for x in range(1,c)]
 go_cols = [x for x in data.columns if 'GO:' in x]
-terms_df = pd.read_csv('feat_sel_wtop/top_feat.txt', names=['term']+nc_cols, dtype=object)
+terms_df = pd.read_csv('featsel/top_feat.txt', names=['term']+nc_cols, dtype=object)
 term_list = terms_df.term.tolist()
 
 for ridx, term in enumerate(term_list):
@@ -237,7 +236,7 @@ for ridx, term in enumerate(term_list):
   cols = [x for x in cols if x is not np.NaN]
   for c in cols:
     if c in nclusters:
-      cldf = pd.read_csv('{0}/spectral_all/{1}/{2}.csv'.format(PATH, c, term.replace(':','')))
+      cldf = pd.read_csv('{0}/spectral/{1}/{2}.csv'.format(PATH, c, term.replace(':','')))
       X[c] = cldf.label
 
   X = X.drop([term], axis=1)
@@ -288,17 +287,4 @@ for ridx, term in enumerate(term_list):
 
   write_csv()
 
-
 print("--- {0:.2f} seconds ---".format(time() - start_time))
-# sys.exit()
-#
-# x = range(len(term_list))
-# line_plot([Aucroc],['prop'],'Sub-hierarchies','aucROC score',x,(0.5,1),OUTPUT_PATH)
-# line_plot([Ap],['prop'],'Sub-hierarchies','Average precision',x,(0,1),OUTPUT_PATH)
-# line_plot([F1s],['prop'],'Sub-hierarchies','F1-score',x,(0,1),OUTPUT_PATH)
-# line_plot([Thresh],['prop'],'Sub-hierarchies','Opt. threshold',x,(0,1),OUTPUT_PATH)
-# line_plot([Prec],['prop'],'Sub-hierarchies','Precision',x,(0,1),OUTPUT_PATH)
-# line_plot([Recall],['prop'],'Sub-hierarchies','Recall',x,(0,1),OUTPUT_PATH)
-# line_plot([Time],['prop'],'Sub-hierarchies','Time (s)',x,(0,np.max(Time)),OUTPUT_PATH)
-# line_plot([TPr],['prop'],'Sub-hierarchies','tpr',x,(0,1),OUTPUT_PATH)
-# line_plot([TNr],['prop'],'Sub-hierarchies','tnr',x,(0,1),OUTPUT_PATH)

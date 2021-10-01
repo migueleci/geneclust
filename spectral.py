@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+# coding: utf-8
+
+# Gene function prediction - Spectral clustering
+# Miguel Romero - Oscar Ramirez, sep 30 2021
+
 import os
 import sys
 import csv
@@ -19,13 +25,13 @@ def create_path(path):
     pass
 
 
-path = '/users/grupofinke/ramirez/dbscan'
+path = '...' # working path
 file = open('{0}/genes.txt'.format(path), 'r')
 genes = [x.strip() for x in file.readlines()]
 ng = len(genes)
 file.close()
 
-data = pd.read_csv('{0}/new_edgelist.csv'.format(path))
+data = pd.read_csv('{0}/gcn.csv'.format(path)) # or affg.csv
 mat = np.zeros((ng, ng))
 
 for u,v,s in tqdm(data.itertuples(index=False, name=None)):
@@ -36,31 +42,6 @@ for n_clusters in [10,20,30]:
   sc = SpectralClustering(n_clusters=n_clusters, affinity='precomputed_nearest_neighbors', n_jobs=64, random_state=0).fit(G_sparse)
   labels = sc.labels_
 
-  file = open('{0}/spectral/n{1}.csv'.format(path,n_clusters),'w')
+  file = open('{0}/spectral/{1}.csv'.format(path,n_clusters),'w') # if affg is used, change {1} for n{1}, or the files will be overwritten
   file.write('\n'.join([str(x) for x in labels]))
   file.close()
-
-
-# print("Completeness: %0.3f" % metrics.completeness_score(df, labels))
-# print("V-measure: %0.3f" % metrics.v_measure_score(df, labels))
-# print("Adjusted Rand Index: %0.3f"
-#       % metrics.adjusted_rand_score(df, labels))
-# print("Adjusted Mutual Information: %0.3f"
-#       % metrics.adjusted_mutual_info_score(df, labels))
-# print("Silhouette Score: %0.3f" % metrics.silhouette_score(mat, list(labels), metric="precomputed"))
-
-# file = open('{0}/labels.csv'.format(path),'w')
-# file.write('\n'.join([str(x) for x in labels]))
-# file.close()
-
-# g = ig.Graph()
-# g.add_vertices(ng)
-# g.vs["name"] = genes
-#
-# edges = list(data[['source', 'target']].itertuples(index=False, name=None))
-# g.add_edges(edges)
-# g.es['weight'] = data['score']
-#
-# print(ig.summary(g))
-#
-# g.layout(layout='layout_fruchterman_reingold')

@@ -1,8 +1,8 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # coding: utf-8
 
-# Gene function prediction
-# Miguel Romero, nov 3rd
+# Gene function prediction - Feature selection SHAP
+# Miguel Romero - Oscar Ramirez, sep 30 2021
 
 import os
 import sys
@@ -43,7 +43,6 @@ import warnings
 warnings.filterwarnings('ignore')
 warnings.simplefilter(action='ignore',category=DeprecationWarning)
 warnings.simplefilter(action='ignore',category=FutureWarning)
-
 
 
 def training_smote(X, y, term, n_splits, seed, plot):
@@ -95,14 +94,14 @@ def training_smote(X, y, term, n_splits, seed, plot):
   feature_importance = feature_importance[feature_importance.val>0]
   return feature_importance.to_dict('records')
 
+
 ##################################
 ##################################
 start_time = time()
 dt = datetime.datetime.today()
 
-PATH = "/users/grupofinke/ramirez/xgb"
-# PATH = "/home/miguel/projects/omics/maize_data/xgb"
-figs_path = "{0}/feat_sel_all".format(PATH)
+PATH = "..." # working path
+figs_path = "{0}/featsel".format(PATH) # set path for figures within path
 
 seed = None # 202104  # seed for random state
 n_splits = 5 # number of folds
@@ -117,7 +116,6 @@ param_grid = {
         'eta': [0.01, 0.05, 0.2, 0.4],
         'subsample': [0.5, 0.7, 0.9, 1.0]}
 
-
 ###
 # prediction
 ###
@@ -126,7 +124,7 @@ data = pd.read_csv('{0}/data.csv'.format(PATH), dtype='float')
 data = data.drop(['Gene', 'diver'], axis=1)
 
 nclusters = [str(x) for x in range(10,101,10)] + ['n{0}'.format(x) for x in range(10,101,10)]
-c_terms = [[x for x in os.listdir('{0}/spectral_all/{1}'.format(PATH, nc)) if '.csv' in x] for nc in nclusters]
+c_terms = [[x for x in os.listdir('{0}/spectral/{1}'.format(PATH, nc)) if '.csv' in x] for nc in nclusters]
 
 sterm_list = list()
 for x in c_terms:
@@ -142,7 +140,7 @@ for ridx, (sterm, term) in enumerate(zip(sterm_list, term_list)):
   X = data[['clust', 'deg', 'neigh_deg', 'betw', 'clos', 'eccec', 'pager', 'const', 'hubs', 'auths', 'coren']]
   for i, nc in enumerate(nclusters):
     if sterm in c_terms[i]:
-      dfc = pd.read_csv('{0}/spectral_all/{1}/{2}'.format(PATH, nc, sterm))
+      dfc = pd.read_csv('{0}/spectral/{1}/{2}'.format(PATH, nc, sterm))
       X[nc] = dfc.label
   y = data[term]
 
@@ -157,7 +155,7 @@ for ridx, (sterm, term) in enumerate(zip(sterm_list, term_list)):
   tmp = pd.DataFrame(list(tmp.items()), columns=['col','val'])
   tmp.val = tmp.val / N
   tmp.sort_values(by=['val'],ascending=False,inplace=True)
-  tmp.to_csv('{0}/feat_sel_all/{1}.csv'.format(PATH,term.replace(':','')), index=False)
+  tmp.to_csv('{0}/featsel/{1}.csv'.format(PATH,term.replace(':','')), index=False)
 
   thr = tmp.val.sum() * 0.9
   tmp['cum']= tmp.val.cumsum()
@@ -165,7 +163,7 @@ for ridx, (sterm, term) in enumerate(zip(sterm_list, term_list)):
   feat_data.append([term] + tmp.col.tolist())
 
 
-file = open("{0}/feat_sel_all/top_feat.txt".format(PATH), "w")
+file = open("{0}/featsel/top_feat.txt".format(PATH), "w")
 file.write('\n'.join([','.join(x) for x in feat_data]))
 
 print("--- {0:.2f} seconds ---".format(time() - start_time))
